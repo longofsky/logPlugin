@@ -18,14 +18,18 @@ public class LogPluginDTO implements Serializable{
     private String sqlMethor;
     /** 执行sql*/
     private String sql;
-    /** 执行sql类型 select/update/insert/delete*/
+    /** 目标表*/
+    private String tableName;
+    /** 执行sql类型 select/update/insert/delete 对应枚举类SqlTypeEnums*/
     private String sqlType;
     /** sql参数*/
     private String param;
-    /** AddLogPlugin 注解信息*/
-    private String value;
+    /** 栈帧信息的辨识*/
+    private String stackValue;
     /** 事务状态*/
     private String commit;
+    /** 注解业务描述*/
+    private String annotationValue;
 
     /** 系统内执行sql 执行记录 key=code + classPath + sqlMethor + sql + param*/
     public String getKey() {
@@ -66,6 +70,14 @@ public class LogPluginDTO implements Serializable{
         this.sql = sql;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
     public String getSqlType() {
         return sqlType;
     }
@@ -82,12 +94,12 @@ public class LogPluginDTO implements Serializable{
         this.param = param;
     }
 
-    public String getValue() {
-        return value;
+    public String getStackValue() {
+        return stackValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setStackValue(String stackValue) {
+        this.stackValue = stackValue;
     }
 
     public String getCommit() {
@@ -98,6 +110,14 @@ public class LogPluginDTO implements Serializable{
         this.commit = commit;
     }
 
+    public String getAnnotationValue() {
+        return annotationValue;
+    }
+
+    public void setAnnotationValue(String annotationValue) {
+        this.annotationValue = annotationValue;
+    }
+
     @Override
     public String toString() {
         return "LogPluginDTO{" +
@@ -105,10 +125,12 @@ public class LogPluginDTO implements Serializable{
                 ", classPath='" + classPath + '\'' +
                 ", sqlMethor='" + sqlMethor + '\'' +
                 ", sql='" + sql + '\'' +
+                ", tableName='" + tableName + '\'' +
                 ", sqlType='" + sqlType + '\'' +
                 ", param='" + param + '\'' +
-                ", value='" + value + '\'' +
+                ", stackValue='" + stackValue + '\'' +
                 ", commit='" + commit + '\'' +
+                ", annotationValue='" + annotationValue + '\'' +
                 '}';
     }
 }

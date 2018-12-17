@@ -1,11 +1,14 @@
 package com.sky.mybatis.aspects;
 
+import com.sky.mybatis.listener.LogPluginEvent;
+import com.sky.mybatis.utils.ThreadUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
@@ -29,31 +32,21 @@ public class LogAspects {
     @Before("pointCut()")
     public void logPluginStart (JoinPoint joinPoint ) {
 
+        /** 获取被拦截方法信息*/
         Signature signature = joinPoint.getSignature();
         String calssname = signature.getDeclaringTypeName();
         String methor =  signature.getName();
 
+
+        /** 重新组装当前线程的name，组装规则：“当前线程名称：类的全限定名.方法名：当前系统时间毫秒值”*/
         Thread thread = Thread.currentThread();
-        thread.setName(calssname+"."+methor+":"+thread.getName());
-        publisher.publishEvent(thread.toString());
+        thread.setName(thread.getName()+":"+calssname+"."+methor+":"+System.currentTimeMillis());
 
-        Object[] args = joinPoint.getArgs();
-        System.out.println(""+joinPoint.getSignature().getName()+"运行。。。@Before:参数列表是：{"+ Arrays.asList(args)+"}");
-    }
+        /** 校验是否标识了声明式事务，如果未标识则不执行 事务事件发布逻辑 todo*/
 
-    @After("pointCut()")
-    public void logPluginEnd (JoinPoint joinPoint ) {
-        System.out.println(""+joinPoint.getSignature().getName()+"结束。。。@After");
-    }
+        /** 封装日志插件类型发布事件*/
+        publisher.publishEvent(new LogPluginEvent(thread));
 
-    @AfterReturning(value = "pointCut()",returning = "result")
-    public void logPluginReturn (JoinPoint joinPoint ) {
-        System.out.println(""+joinPoint.getSignature().getName()+"返回。。。@AfterReturning");
-    }
-
-    @AfterThrowing(value = "pointCut()",throwing = "exception")
-    public void logPluginException (JoinPoint joinPoint ) {
-        System.out.println(""+joinPoint.getSignature().getName()+"抛出异常。。。@AfterThrowing");
     }
 
 }

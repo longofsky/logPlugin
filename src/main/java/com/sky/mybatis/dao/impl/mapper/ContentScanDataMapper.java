@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface ContentScanDataMapper extends BaseSkyMapper<ContentScanDataEntity>    {
 
+    @AddLogPlugin
     String getAppkeyById(@Param("id") Long id);
     String getRequestIdById(@Param("id") Long id);
 

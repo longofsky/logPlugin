@@ -104,7 +104,6 @@ public class MyBatisTest {
 
 		String appkey = contentScanDataService.getAppkeyById(865705L);
 
-
 		LogPluginContent logPluginContent = LogPluginContent.getLogPluginContent();
 
 		System.out.println(logPluginContent);

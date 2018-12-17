@@ -1,28 +1,17 @@
 package com.sky.mybatis.plugin;
 
-import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.fastjson.JSON;
 import com.sky.mybatis.annotation.AddLogPlugin;
+import com.sky.mybatis.enums.SqlTypeEnums;
+import com.sky.mybatis.enums.TransactionStatusEnum;
 import com.sky.mybatis.logPlugin.LogPluginContent;
 import com.sky.mybatis.logPlugin.LogPluginDTO;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.*;
-import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
-import org.springframework.aop.framework.AdvisedSupport;
-import org.springframework.aop.framework.AdvisorChainFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.interceptor.TransactionAttribute;
-import org.springframework.transaction.interceptor.TransactionAttributeSource;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 import java.lang.reflect.Method;
 import java.util.Properties;
@@ -36,13 +25,6 @@ import java.util.Properties;
 )
 public class LogExecutorPlugin implements Interceptor {
 
-//    @Autowired (required = false)
-//    private AdvisedSupport advised;
-//    @Autowired (required = false)
-//    private AdvisorChainFactory advisorChainFactory;
-//    @Autowired (required = false)
-//    private TransactionInterceptor transactionInterceptor;
-
     Properties properties = null;
 
     private LogPluginContent logPluginContent = LogPluginContent.getLogPluginContent();
@@ -54,22 +36,6 @@ public class LogExecutorPlugin implements Interceptor {
 
 
     public Object intercept(Invocation invocation) throws Throwable {
-
-
-
-//        TransactionAttributeSource transactionAttributeSource = transactionInterceptor.getTransactionAttributeSource();
-//
-//        Class aClass = Class.forName("com.sky.mybatis.dao.impl.ContentScanDataServiceImpl");
-//
-//        Method method = aClass.getMethod("updateAppKeyByid",Long.class,String.class);
-//
-//        TransactionAttribute transactionAttribute = transactionAttributeSource.getTransactionAttribute(method,aClass);
-//
-//        PlatformTransactionManager platformTransactionManager = transactionInterceptor.getTransactionManager();
-//
-//        System.out.println(transactionInterceptor.hashCode());
-//
-//        System.out.println(invocation.toString());
 
         this.addLogPluginContent(invocation);
 
@@ -99,6 +65,7 @@ public class LogExecutorPlugin implements Interceptor {
             AddLogPlugin annotationForClass = (AddLogPlugin)c.getAnnotation(AddLogPlugin.class);
 
             if (annotationForClass != null) {
+                logPluginDTO.setAnnotationValue(annotationForClass.value());
                 logPluginContent.add(logPluginDTO);
                 return;
             }
@@ -113,6 +80,7 @@ public class LogExecutorPlugin implements Interceptor {
                         AddLogPlugin addLogPlugin = (AddLogPlugin)method.getAnnotation(AddLogPlugin.class);
 
                         if (addLogPlugin != null) {
+                            logPluginDTO.setAnnotationValue(addLogPlugin.value());
                             logPluginContent.add(logPluginDTO);
                         }
                     }
@@ -144,14 +112,20 @@ public class LogExecutorPlugin implements Interceptor {
         logPluginDTO.setParam(param.toString());
         logPluginDTO.setSql(sql);
         logPluginDTO.setSqlMethor(classPathAndSqlMethor.substring(lastIndexOfDoc+1));
-
         logPluginDTO.setSqlType(sqlCommandType);
+        /** select语句不走事务逻辑*/
+        if(SqlTypeEnums.SELECT.getDesc().equals(sqlCommandType)) {
 
-        Thread current = Thread.currentThread();
+            logPluginDTO.setCommit(TransactionStatusEnum.UNTRANSACTION.getDesc());
+        }
+        /** 校验入口方法 是否标识了 声明式事务，无标示则不处理事务逻辑 todo*/
+        Thread thread = Thread.currentThread();
 
-        logPluginDTO.setValue(current.toString());
+        logPluginDTO.setStackValue(thread.getName());
 
         return logPluginDTO;
     }
+
+    /** 提取表名信息 todo*/
 
 }

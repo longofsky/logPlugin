@@ -46,7 +46,7 @@ public class ContentScanDataServiceImpl  implements IContentScanDataService {
 
         Long aLong =  contentScanDataDAO.updateAppKeyByid(id,appKey);
 
-//        int i = 1/0;
+        int i = 1/0;
         return aLong;
     }
 
