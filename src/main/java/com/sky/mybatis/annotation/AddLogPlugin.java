@@ -13,5 +13,5 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface AddLogPlugin {
 
-    String value();
+    String value() default "";
 }

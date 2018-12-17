@@ -36,13 +36,12 @@ import java.util.Properties;
 )
 public class LogExecutorPlugin implements Interceptor {
 
-
-    @Autowired (required = false)
-    private AdvisedSupport advised;
-    @Autowired (required = false)
-    private AdvisorChainFactory advisorChainFactory;
-    @Autowired (required = false)
-    private TransactionInterceptor transactionInterceptor;
+//    @Autowired (required = false)
+//    private AdvisedSupport advised;
+//    @Autowired (required = false)
+//    private AdvisorChainFactory advisorChainFactory;
+//    @Autowired (required = false)
+//    private TransactionInterceptor transactionInterceptor;
 
     Properties properties = null;
 
@@ -56,19 +55,21 @@ public class LogExecutorPlugin implements Interceptor {
 
     public Object intercept(Invocation invocation) throws Throwable {
 
-        TransactionAttributeSource transactionAttributeSource = transactionInterceptor.getTransactionAttributeSource();
 
-        Class aClass = Class.forName("com.sky.mybatis.dao.impl.ContentScanDataServiceImpl");
 
-        Method method = aClass.getMethod("updateAppKeyByid",Long.class,String.class);
-
-        TransactionAttribute transactionAttribute = transactionAttributeSource.getTransactionAttribute(method,aClass);
-
-        PlatformTransactionManager platformTransactionManager = transactionInterceptor.getTransactionManager();
-
-        System.out.println(transactionInterceptor.hashCode());
-
-        System.out.println(invocation.toString());
+//        TransactionAttributeSource transactionAttributeSource = transactionInterceptor.getTransactionAttributeSource();
+//
+//        Class aClass = Class.forName("com.sky.mybatis.dao.impl.ContentScanDataServiceImpl");
+//
+//        Method method = aClass.getMethod("updateAppKeyByid",Long.class,String.class);
+//
+//        TransactionAttribute transactionAttribute = transactionAttributeSource.getTransactionAttribute(method,aClass);
+//
+//        PlatformTransactionManager platformTransactionManager = transactionInterceptor.getTransactionManager();
+//
+//        System.out.println(transactionInterceptor.hashCode());
+//
+//        System.out.println(invocation.toString());
 
         this.addLogPluginContent(invocation);
 
@@ -98,10 +99,7 @@ public class LogExecutorPlugin implements Interceptor {
             AddLogPlugin annotationForClass = (AddLogPlugin)c.getAnnotation(AddLogPlugin.class);
 
             if (annotationForClass != null) {
-
-                logPluginDTO.setValue(annotationForClass.value());
                 logPluginContent.add(logPluginDTO);
-
                 return;
             }
 
@@ -115,14 +113,11 @@ public class LogExecutorPlugin implements Interceptor {
                         AddLogPlugin addLogPlugin = (AddLogPlugin)method.getAnnotation(AddLogPlugin.class);
 
                         if (addLogPlugin != null) {
-
-                            logPluginDTO.setValue(addLogPlugin.value());
                             logPluginContent.add(logPluginDTO);
                         }
                     }
                 }
             }
-
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -151,6 +146,10 @@ public class LogExecutorPlugin implements Interceptor {
         logPluginDTO.setSqlMethor(classPathAndSqlMethor.substring(lastIndexOfDoc+1));
 
         logPluginDTO.setSqlType(sqlCommandType);
+
+        Thread current = Thread.currentThread();
+
+        logPluginDTO.setValue(current.toString());
 
         return logPluginDTO;
     }

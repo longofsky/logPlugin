@@ -1,6 +1,7 @@
 package com.sky.mybatis.listener;
 
 import com.sky.mybatis.dao.entity.ContentScanDataEntity;
+import com.sky.mybatis.enums.TransactionStatusEnum;
 import com.sky.mybatis.logPlugin.LogPluginContent;
 import com.sky.mybatis.logPlugin.LogPluginDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,28 +26,13 @@ public class LogPluginTransactionEventListener< T extends Object> {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void beforeCommit (PayloadApplicationEvent<T> event) {
 
+        upDateLogPluginContent(event,TransactionStatusEnum.BEFORECOMMIT);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void afterCommit (PayloadApplicationEvent<T> event) {
 
-        String s = (String) event.getPayload();
-
-        LogPluginContent logPluginContent  = LogPluginContent.getLogPluginContent();
-
-        ConcurrentHashMap concurrentHashMap = logPluginContent.getConcurrentHashMap();
-
-        if (concurrentHashMap.size() > 0) {
-
-            for ( Object o: concurrentHashMap.keySet() ) {
-                LogPluginDTO logPluginDTO = (LogPluginDTO)concurrentHashMap.get(o);
-
-                if (logPluginDTO.getValue() != null && logPluginDTO.getValue().equals(s)) {
-
-                    logPluginDTO.setCommit("commit");
-                }
-             }
-        }
+        upDateLogPluginContent(event,TransactionStatusEnum.COMMIT);
 
         System.out.println("after commit, id: " );
     }
@@ -54,12 +40,18 @@ public class LogPluginTransactionEventListener< T extends Object> {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
     public void afterCompletion (PayloadApplicationEvent<T> event) {
 
-        LogPluginContent logPluginContent  = LogPluginContent.getLogPluginContent();
+//        upDateLogPluginContent(event,TransactionStatusEnum.COMPLETION);
         System.out.println("after completion, id: ");
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void afterRollback (PayloadApplicationEvent<T> event) {
+
+        upDateLogPluginContent(event,TransactionStatusEnum.ROLLBACK);
+        System.out.println("after rollback, id: " );
+    }
+
+    private void upDateLogPluginContent (PayloadApplicationEvent<T> event,TransactionStatusEnum transactionStatusEnum) {
 
         String s = (String) event.getPayload();
 
@@ -74,11 +66,11 @@ public class LogPluginTransactionEventListener< T extends Object> {
 
                 if (logPluginDTO.getValue() != null && logPluginDTO.getValue().equals(s)) {
 
-                    logPluginDTO.setCommit("rollback");
+                    logPluginDTO.setCommit(transactionStatusEnum.getDesc());
                 }
             }
         }
-        System.out.println("after rollback, id: " );
+
     }
 
 }

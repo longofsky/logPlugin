@@ -44,11 +44,9 @@ public class ContentScanDataServiceImpl  implements IContentScanDataService {
     @Transactional(rollbackFor = Exception.class)
     public Long updateAppKeyByid(Long id,String appKey)  {
 
-        publisher.publishEvent("com.sky.mybatis.dao.impl.ContentScanDataServiceImpl:updateAppKeyByid:Long:String");
         Long aLong =  contentScanDataDAO.updateAppKeyByid(id,appKey);
 
 //        int i = 1/0;
-
         return aLong;
     }
 
@@ -59,5 +57,9 @@ public class ContentScanDataServiceImpl  implements IContentScanDataService {
         publisher.publishEvent(contentScanDataEntity);
 
         return aLong;
+    }
+
+    public String getAppkeyById(long l) {
+        return contentScanDataDAO.getAppkeyById(l);
     }
 }

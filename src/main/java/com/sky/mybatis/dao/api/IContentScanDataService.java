@@ -15,4 +15,5 @@ public interface IContentScanDataService {
 
     public Long insertEntity(ContentScanDataEntity contentScanDataEntity);
 
+    String getAppkeyById(long l);
 }

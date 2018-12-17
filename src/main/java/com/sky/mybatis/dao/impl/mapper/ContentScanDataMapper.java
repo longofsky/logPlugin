@@ -14,7 +14,7 @@ public interface ContentScanDataMapper extends BaseSkyMapper<ContentScanDataEnti
     String getAppkeyById(@Param("id") Long id);
     String getRequestIdById(@Param("id") Long id);
 
-    @AddLogPlugin(value = "com.sky.mybatis.dao.impl.ContentScanDataServiceImpl:updateAppKeyByid:Long:String")
+    @AddLogPlugin
     Long updateAppKeyByid(@Param("id")Long id, @Param("appKey")String appKey);
 
     //除了在BaseMapper中的基本的方法（CRUD），其它方法需要自己定义及实现

@@ -100,9 +100,9 @@ public class MyBatisTest {
 	public void testgetAppkeyById() throws IOException {
 
 		this.getSqlSessionFactory();
-		ContentScanDataDAO contentScanDataDAO = (ContentScanDataDAO)applicationContext.getBean("contentScanDataDAOImpl");
+		IContentScanDataService contentScanDataService = (IContentScanDataService)applicationContext.getBean("contentScanDataServiceImpl");
 
-		String appkey = contentScanDataDAO.getAppkeyById(865705L);
+		String appkey = contentScanDataService.getAppkeyById(865705L);
 
 
 		LogPluginContent logPluginContent = LogPluginContent.getLogPluginContent();
@@ -117,7 +117,13 @@ public class MyBatisTest {
 		this.getSqlSessionFactory();
 		IContentScanDataService contentScanDataService= (IContentScanDataService)applicationContext.getBean("contentScanDataServiceImpl");
 
-		contentScanDataService.updateAppKeyByid(865707L,"spring-mybatis3");
+		try {
+
+			contentScanDataService.updateAppKeyByid(865707L,"spring-mybatis3");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 
 		LogPluginContent logPluginContent = LogPluginContent.getLogPluginContent();
 
