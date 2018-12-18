@@ -1,6 +1,7 @@
 package com.sky.mybatis.plugin;
 
 import com.sky.mybatis.annotation.AddLogPlugin;
+import com.sky.mybatis.enums.LogPluginDTOStatusEnums;
 import com.sky.mybatis.enums.SqlTypeEnums;
 import com.sky.mybatis.enums.TransactionStatusEnum;
 import com.sky.mybatis.logPlugin.LogPluginContent;
@@ -14,6 +15,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.Properties;
 
 @Intercepts(
@@ -116,12 +118,14 @@ public class LogExecutorPlugin implements Interceptor {
         /** select语句不走事务逻辑*/
         if(SqlTypeEnums.SELECT.getDesc().equals(sqlCommandType)) {
 
-            logPluginDTO.setCommit(TransactionStatusEnum.UNTRANSACTION.getDesc());
+            logPluginDTO.setCommit(TransactionStatusEnum.UNTRANSACTION.getIndex());
+            logPluginDTO.setLogPluginDTOStatus(LogPluginDTOStatusEnums.WAITDURABLE.getIndex());
         }
         /** 校验入口方法 是否标识了 声明式事务，无标示则不处理事务逻辑 todo*/
         Thread thread = Thread.currentThread();
 
         logPluginDTO.setStackValue(thread.getName());
+        logPluginDTO.setInitTime(new Date());
 
         return logPluginDTO;
     }

@@ -1,6 +1,7 @@
 package com.sky.mybatis.listener;
 
 import com.sky.mybatis.dao.entity.ContentScanDataEntity;
+import com.sky.mybatis.enums.LogPluginDTOStatusEnums;
 import com.sky.mybatis.enums.TransactionStatusEnum;
 import com.sky.mybatis.logPlugin.LogPluginContent;
 import com.sky.mybatis.logPlugin.LogPluginDTO;
@@ -13,6 +14,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author: 甜筒
@@ -63,23 +66,29 @@ public class LogPluginTransactionEventListener< T extends Object> {
 
         LogPluginContent logPluginContent  = LogPluginContent.getLogPluginContent();
 
-        ConcurrentHashMap concurrentHashMap = logPluginContent.getConcurrentHashMap();
+        /** 确认事务状态的数据从 requireTransactionVerify 转移到 waitDurable*/
+        ConcurrentLinkedQueue requireTransactionVerify = logPluginContent.getRequireTransactionVerify();
+        ConcurrentSkipListSet waitDurable = logPluginContent.getWaitDurable();
 
-        if (concurrentHashMap.size() <= 0) {
-
+        if (requireTransactionVerify.isEmpty()) {
             return;
         }
-        for (Object o : concurrentHashMap.keySet()) {
-            LogPluginDTO logPluginDTO = (LogPluginDTO) concurrentHashMap.get(o);
+        while (!requireTransactionVerify.isEmpty()) {
 
+            LogPluginDTO logPluginDTO = (LogPluginDTO) requireTransactionVerify.poll();
 
-            if (TransactionStatusEnum.UNTRANSACTION.getDesc().equals(logPluginDTO.getCommit())) {
+            if (LogPluginDTOStatusEnums.WAITDURABLE.getIndex().equals(logPluginDTO.getLogPluginDTOStatus())) {
+
+                logPluginContent.addWaitDurable(logPluginDTO);
                 continue;
             }
 
             if (logPluginDTO.getStackValue().equals(logPluginEvent.getThread().getName())) {
 
-                logPluginDTO.setCommit(transactionStatusEnum.getDesc());
+                logPluginDTO.setCommit(transactionStatusEnum.getIndex());
+                logPluginDTO.setLogPluginDTOStatus(LogPluginDTOStatusEnums.WAITDURABLE.getIndex());
+
+                logPluginContent.addWaitDurable(logPluginDTO);
             }
         }
     }

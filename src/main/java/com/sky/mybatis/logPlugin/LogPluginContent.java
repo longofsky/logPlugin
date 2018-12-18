@@ -1,7 +1,11 @@
 package com.sky.mybatis.logPlugin;
 
+import com.sky.mybatis.enums.LogPluginDTOStatusEnums;
+
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author: 甜筒
@@ -10,11 +14,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LogPluginContent implements Serializable{
 
-    /** 系统内执行sql 执行记录 key=code + classPath + sqlMethor + sql + param*/
-    private ConcurrentHashMap concurrentHashMap = new ConcurrentHashMap();
+    /** 待确认事务状态集合*/
+    private ConcurrentLinkedQueue<LogPluginDTO> requireTransactionVerify = new ConcurrentLinkedQueue();
+
+    /** 带持久化集合，两个集合元素不重复*/
+    private ConcurrentSkipListSet<LogPluginDTO> waitDurable = new ConcurrentSkipListSet();
 
     /** 持有私静态实例，防止被引用此处赋值为 持有私静态实例，防止被引用此处赋值为 null ，目的是实现延迟加载 */
     private static  LogPluginContent logPluginContent = null;
+
+
 
     /** 私有构造方法，防止被实例化*/
     private LogPluginContent () {
@@ -32,35 +41,39 @@ public class LogPluginContent implements Serializable{
     }
 
 
+    /** waitDurable 添加记录，失败的话回放到 requireTransactionVerify*/
+    public void addWaitDurable (LogPluginDTO logPluginDTO) {
+
+        if(!waitDurable.add(logPluginDTO)) {
+            requireTransactionVerify.add(logPluginDTO);
+        }
+    }
+
     /** 操作记录添加到异步容器*/
     public void add (LogPluginDTO logPluginDTO) {
 
-        concurrentHashMap.put(logPluginDTO.getKey(),logPluginDTO);
-    }
-    /** 操作记录异步持久化并删除*/
-
-    public LogPluginDTO add (String key) {
-
-        Object o = concurrentHashMap.remove(key);
-        if (o == null) {
-
-            return null;
+        if(LogPluginDTOStatusEnums.WAITDURABLE.getIndex().equals(logPluginDTO.getLogPluginDTOStatus())) {
+            waitDurable.add(logPluginDTO);
+        } else {
+            requireTransactionVerify.add(logPluginDTO);
         }
-        return (LogPluginDTO)o;
     }
 
-    public ConcurrentHashMap getConcurrentHashMap() {
-        return concurrentHashMap;
+    public ConcurrentLinkedQueue getRequireTransactionVerify() {
+        return requireTransactionVerify;
     }
 
-    public void setConcurrentHashMap(ConcurrentHashMap concurrentHashMap) {
-        this.concurrentHashMap = concurrentHashMap;
+    public void setRequireTransactionVerify(ConcurrentLinkedQueue requireTransactionVerify) {
+        this.requireTransactionVerify = requireTransactionVerify;
     }
 
-    @Override
-    public String toString() {
-        return "LogPluginContent{" +
-                "concurrentHashMap=" + concurrentHashMap +
-                '}';
+    public ConcurrentSkipListSet getWaitDurable() {
+        return waitDurable;
     }
+
+    public void setWaitDurable(ConcurrentSkipListSet waitDurable) {
+        this.waitDurable = waitDurable;
+    }
+
+    /** toString  todo*/
 }

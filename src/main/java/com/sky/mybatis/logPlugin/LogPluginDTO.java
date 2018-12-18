@@ -1,13 +1,15 @@
 package com.sky.mybatis.logPlugin;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author: 甜筒
  * @Date: 13:58 2018/12/13
  * Modified By:
  */
-public class LogPluginDTO implements Serializable{
+public class LogPluginDTO implements Serializable,Comparable{
 
 
     /** 业务标识*/
@@ -27,15 +29,15 @@ public class LogPluginDTO implements Serializable{
     /** 栈帧信息的辨识*/
     private String stackValue;
     /** 事务状态*/
-    private String commit;
+    private Integer commit;
     /** 注解业务描述*/
     private String annotationValue;
+    /** 处理逻辑状态*/
+    private Integer LogPluginDTOStatus;
 
-    /** 系统内执行sql 执行记录 key=code + classPath + sqlMethor + sql + param*/
-    public String getKey() {
+    /** 对象创建时间*/
+    private Date initTime;
 
-        return this.code+":"+this.classPath+":"+this.sqlMethor+":" +this.sql+":" +this.param;
-    }
 
     public String getCode() {
         return code;
@@ -102,12 +104,20 @@ public class LogPluginDTO implements Serializable{
         this.stackValue = stackValue;
     }
 
-    public String getCommit() {
+    public Integer getCommit() {
         return commit;
     }
 
-    public void setCommit(String commit) {
+    public void setCommit(Integer commit) {
         this.commit = commit;
+    }
+
+    public Integer getLogPluginDTOStatus() {
+        return LogPluginDTOStatus;
+    }
+
+    public void setLogPluginDTOStatus(Integer logPluginDTOStatus) {
+        LogPluginDTOStatus = logPluginDTOStatus;
     }
 
     public String getAnnotationValue() {
@@ -116,6 +126,14 @@ public class LogPluginDTO implements Serializable{
 
     public void setAnnotationValue(String annotationValue) {
         this.annotationValue = annotationValue;
+    }
+
+    public Date getInitTime() {
+        return initTime;
+    }
+
+    public void setInitTime(Date initTime) {
+        this.initTime = initTime;
     }
 
     @Override
@@ -129,8 +147,41 @@ public class LogPluginDTO implements Serializable{
                 ", sqlType='" + sqlType + '\'' +
                 ", param='" + param + '\'' +
                 ", stackValue='" + stackValue + '\'' +
-                ", commit='" + commit + '\'' +
+                ", commit=" + commit +
                 ", annotationValue='" + annotationValue + '\'' +
+                ", LogPluginDTOStatus=" + LogPluginDTOStatus +
+                ", initTime=" + initTime +
                 '}';
+    }
+
+    public int compareTo(Object o) {
+
+        LogPluginDTO logPluginDTO = (LogPluginDTO)o;
+        return this.getInitTime().compareTo(logPluginDTO.getInitTime());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LogPluginDTO that = (LogPluginDTO) o;
+        return Objects.equals(code, that.code) &&
+                Objects.equals(classPath, that.classPath) &&
+                Objects.equals(sqlMethor, that.sqlMethor) &&
+                Objects.equals(sql, that.sql) &&
+                Objects.equals(tableName, that.tableName) &&
+                Objects.equals(sqlType, that.sqlType) &&
+                Objects.equals(param, that.param) &&
+                Objects.equals(stackValue, that.stackValue) &&
+                Objects.equals(commit, that.commit) &&
+                Objects.equals(annotationValue, that.annotationValue) &&
+                Objects.equals(LogPluginDTOStatus, that.LogPluginDTOStatus) &&
+                Objects.equals(initTime, that.initTime);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(code, classPath, sqlMethor, sql, tableName, sqlType, param, stackValue, commit, annotationValue, LogPluginDTOStatus, initTime);
     }
 }
