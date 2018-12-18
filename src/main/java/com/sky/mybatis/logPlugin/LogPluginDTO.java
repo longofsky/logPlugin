@@ -34,9 +34,9 @@ public class LogPluginDTO implements Serializable,Comparable{
     private String annotationValue;
     /** 处理逻辑状态*/
     private Integer LogPluginDTOStatus;
-
     /** 对象创建时间*/
     private Date initTime;
+    /** 同一个对象进入 requireTransactionVerify 队列的次数-防止死循环 todo*/
 
 
     public String getCode() {

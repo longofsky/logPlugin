@@ -26,7 +26,7 @@ public class LogAspects {
     @Autowired
     private ApplicationEventPublisher publisher;
 
-    @Pointcut("execution(public * com.sky.mybatis.dao.impl.ContentScanDataServiceImpl.*(..))")
+    @Pointcut("@annotation(org.springframework.transaction.annotation.Transactional)")
     public void pointCut () {}
 
     @Before("pointCut()")

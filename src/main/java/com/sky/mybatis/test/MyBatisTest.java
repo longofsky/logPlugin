@@ -2,6 +2,7 @@ package com.sky.mybatis.test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Scanner;
 
 import com.sky.mybatis.dao.api.ContentScanDataDAO;
 import com.sky.mybatis.dao.api.IContentScanDataService;
@@ -116,6 +117,7 @@ public class MyBatisTest {
 		this.getSqlSessionFactory();
 		IContentScanDataService contentScanDataService= (IContentScanDataService)applicationContext.getBean("contentScanDataServiceImpl");
 
+		String appkey = contentScanDataService.getAppkeyById(865705L);
 		try {
 
 			contentScanDataService.updateAppKeyByid(865707L,"spring-mybatis3");
@@ -123,9 +125,10 @@ public class MyBatisTest {
 			e.printStackTrace();
 		}
 
-
 		LogPluginContent logPluginContent = LogPluginContent.getLogPluginContent();
 
+        Scanner scan = new Scanner(System.in);
+        String str1 = scan.next();
 		System.out.println(logPluginContent);
 	}
 
