@@ -125,6 +125,8 @@ public class MyBatisTest {
 			e.printStackTrace();
 		}
 
+        Long contentScanDataEntity = contentScanDataService.insert();
+
 		LogPluginContent logPluginContent = LogPluginContent.getLogPluginContent();
 
         Scanner scan = new Scanner(System.in);

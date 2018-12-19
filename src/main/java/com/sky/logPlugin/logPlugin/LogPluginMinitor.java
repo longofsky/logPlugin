@@ -48,6 +48,6 @@ public interface LogPluginMinitor {
      * @param logPluginDTOS
      * @Modified By:
      */
-    public Boolean executeLogDurable (final List<LogPluginDTO> logPluginDTOS);
+    public Integer executeLogDurable (final List<LogPluginDTO> logPluginDTOS);
 
 }

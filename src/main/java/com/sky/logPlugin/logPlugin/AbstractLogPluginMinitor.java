@@ -1,6 +1,7 @@
 package com.sky.logPlugin.logPlugin;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.sky.logPlugin.constants.LogPluginConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,17 +24,7 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractLogPluginMinitor.class);
 
-    /**
-     * 待执行队列中超过此值测执行异步持久化线程
-     */
-    private static final int DEFAULT_MONITOR_LOGPLUGIN_QUEUE_SIZE = 500;
-
     private static final int MAP_INIT_SIZE = 16;
-
-    /**
-     * 待执行队列中超过此值测执行异步持久化线程
-     */
-    private int monitorLogPluginQueueMaxSize = DEFAULT_MONITOR_LOGPLUGIN_QUEUE_SIZE;
 
     /**
      * 执行 日志持久化的时间间隔 （秒）
@@ -54,7 +45,7 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
 
     public void startExecuteLogDurableAsyn() {
 
-        if (logPluginContent.getWaitDurable().size() >= monitorLogPluginQueueMaxSize) {
+        if (logPluginContent.getWaitDurable().size() >= LogPluginConstant.DEFAULT_MONITOR_LOGPLUGIN_QUEUE_SIZE) {
             executeLogDurableAsyn();
         }
     }
@@ -89,19 +80,27 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
 
     /** 此方法保证单线程执行*/
     public int transformExecuteLogDurable() {
+
+        Long startTime = System.currentTimeMillis();
+
+
         if (monitorLogPluginQueueRunning) {
+
+            LOGGER.info("线程："+Thread.currentThread().getName()+"运行时间："+(System.currentTimeMillis()-startTime)+"结束点：monitorLogPluginQueueRunning=true");
             return -1;
+
         }
         monitorLogPluginQueueRunning = true;
         int executedCount = 0;
+        int logPluginDTOSize = 0;
         try {
 
             long curtimeStart = System.currentTimeMillis();
             List<Map<String, Object>> sqlLogs = new ArrayList();
 
-            List<LogPluginDTO> logPluginDTOs = new ArrayList<LogPluginDTO>(DEFAULT_MONITOR_LOGPLUGIN_QUEUE_SIZE);
+            List<LogPluginDTO> logPluginDTOs = new ArrayList<LogPluginDTO>(LogPluginConstant.DEFAULT_WAITDURABLE_QUEUE_MAX_SIZE);
 
-            while (!logPluginContent.getWaitDurable().isEmpty() && logPluginDTOs.size() <= DEFAULT_MONITOR_LOGPLUGIN_QUEUE_SIZE) {
+            while (!logPluginContent.getWaitDurable().isEmpty() && logPluginDTOs.size() <= LogPluginConstant.DEFAULT_WAITDURABLE_QUEUE_MAX_SIZE) {
 
                 /** 添加 带批量处理集合 并删除元数据*/
                 logPluginDTOs.add((LogPluginDTO)logPluginContent.getWaitDurable().pollFirst());
@@ -109,22 +108,26 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
             }
             /** 批量插入*/
             if (logPluginDTOs.isEmpty()) {
+                LOGGER.info("线程："+Thread.currentThread().getName()+"运行时间："+(System.currentTimeMillis()-startTime)+"结束点：logPluginDTOs 为空");
 
-                return executedCount;
+                return -1;
             }
+            logPluginDTOSize = logPluginDTOs.size();
             executeLogDurable(logPluginDTOs);
 
         } catch (Exception e) {
-            LOGGER.info("执行logPlugin  队列异常", e);
+            LOGGER.error("执行logPlugin  队列异常", e);
         } finally {
             /** 将monitorExplianQueueRunning 置成true*/
             monitorLogPluginQueueRunning = false;
         }
+        LOGGER.info("线程："+Thread.currentThread().getName()+" 运行时间："+(System.currentTimeMillis()-startTime)+" 结束点：正常执行完毕。 元素："+logPluginDTOSize+"个。 执行："+executedCount+"个");
+
         return executedCount;
     }
 
-    public Boolean executeLogDurable(final List<LogPluginDTO> logPluginDTOS) {
+    public Integer executeLogDurable(final List<LogPluginDTO> logPluginDTOS) {
 
-        return false;
+        return -1;
     }
 }

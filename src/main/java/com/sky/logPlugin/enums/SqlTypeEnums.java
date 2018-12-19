@@ -10,7 +10,8 @@ public enum SqlTypeEnums {
     SELECT (1,"SELECT"),
     UPDATE (2,"UPDATE"),
     INSERT (3,"INSERT"),
-    DELETE (4,"DELETE");
+    DELETE (4,"DELETE"),
+    UNKNOW (5,"UNKNOW");
 
 
     private Integer index;

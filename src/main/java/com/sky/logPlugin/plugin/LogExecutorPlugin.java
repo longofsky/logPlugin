@@ -15,18 +15,14 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 @Intercepts(
@@ -36,7 +32,7 @@ import java.util.Properties;
                 @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
         }
 )
-public class LogExecutorPlugin implements Interceptor {
+public class LogExecutorPlugin implements Interceptor,DisposableBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogPluginMinitorDBImpl.class);
 
@@ -53,11 +49,20 @@ public class LogExecutorPlugin implements Interceptor {
 
     private volatile Boolean flag = true;
 
+    /** 获取 插件持久化类型，如果未配置 默认取 "db"*/
+    String durableType;
+
 
 
     public Object intercept(Invocation invocation) throws Throwable {
 
-        /** applicationContext容器 手动注册LogPluginEnvironment*/
+        if (flag) {
+            durableType = properties.getProperty("durableType");
+            if (StringUtils.isEmpty(durableType)) {
+                durableType = "db";
+            }
+        }
+
         this.addLogPluginContent(invocation);
 
         return invocation.proceed();
@@ -107,12 +112,6 @@ public class LogExecutorPlugin implements Interceptor {
                     }
                 }
             }
-
-            /** 获取 插件持久化类型，如果未配置 默认取 "db"*/
-            String durableType = properties.getProperty("durableType");
-            if (StringUtils.isEmpty(durableType)) {
-                durableType = "db";
-            }
             /** 开启LogPlugin监控线程*/
             LogPluginMinitorFactory.getLogPluginMinitor(durableType,logPluginEnvironment).startExecuteLogDurableAsyn();
         } catch (Exception e) {
@@ -132,7 +131,6 @@ public class LogExecutorPlugin implements Interceptor {
 
         String classPathAndSqlMethor = mappedStatement.getId();
         int lastIndexOfDoc = classPathAndSqlMethor.lastIndexOf(".");
-
 
         LogPluginDTO logPluginDTO = new LogPluginDTO();
 
@@ -154,14 +152,81 @@ public class LogExecutorPlugin implements Interceptor {
         logPluginDTO.setStackValue(threadName);
         logPluginDTO.setInitTime(new Date());
 
+        /** 解析表名*/
+        setTableName(logPluginDTO);
+
         return logPluginDTO;
     }
 
-    /** 提取表名信息 todo*/
+    /** 解析sql的表名*/
+    private void setTableName (LogPluginDTO logPluginDTO) {
+
+        /** 保存出现在表明前的关键词*/
+        List <String> keys = new ArrayList<String>();
+        /** 保存出现在表明前的下标*/
+        List <String> tables = new ArrayList();
+
+        keys.add("from");
+        keys.add("update");
+        keys.add("into");
+        keys.add("join");
+
+        String sql = logPluginDTO.getSql();
+
+        if (StringUtils.isEmpty(sql)) {
+            logPluginDTO.setTableName(SqlTypeEnums.UNKNOW.name());
+
+            return;
+        }
+
+        String[] stringFragment =  sql.split("\\s+");
+
+        for (int i = 0; i < stringFragment.length;i++) {
+
+            if (!keys.contains(stringFragment[i])) {
+                continue;
+            }
+
+            if ((i+1) >= stringFragment.length) {
+                continue;
+            }
+
+            tables.add(stringFragment[i+1]);
+        }
+        if (tables.isEmpty()) {
+
+            logPluginDTO.setTableName(SqlTypeEnums.UNKNOW.name());
+            return;
+        }
+        /** 校验 子查询的可能*/
+
+        StringBuffer stringBuffer = null;
+        for (String s:tables) {
+
+            if (s.contains("(")) {
+                continue;
+            }
+            if (stringBuffer == null ) {
+                stringBuffer = new StringBuffer(s);
+            } else {
+                stringBuffer.append(":").append(s);
+            }
+        }
+        if (stringBuffer == null ) {
+            logPluginDTO.setTableName(SqlTypeEnums.UNKNOW.name());
+            return;
+        }
+
+        logPluginDTO.setTableName(stringBuffer.toString());
+
+    }
 
     private void  waitdurable(LogPluginDTO logPluginDTO) {
         logPluginDTO.setCommit(TransactionStatusEnum.UNTRANSACTION.getIndex());
         logPluginDTO.setLogPluginDTOStatus(LogPluginDTOStatusEnums.WAITDURABLE.getIndex());
     }
+    public void destroy() throws Exception {
 
+        LogPluginMinitorFactory.getLogPluginMinitor(durableType,logPluginEnvironment).transformExecuteLogDurable();
+    }
 }

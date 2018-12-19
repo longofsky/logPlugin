@@ -3,6 +3,7 @@ package com.sky.logPlugin.logPlugin;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author: 甜筒
@@ -34,6 +35,10 @@ public class LogPluginDTO implements Serializable,Comparable{
     private String annotationValue;
     /** 处理逻辑状态*/
     private Integer LogPluginDTOStatus;
+
+    /** 进入 requireTransactionVerify 队列的次数*/
+    private AtomicInteger atomicInteger = new AtomicInteger(0);
+
     /** 对象创建时间*/
     private Date initTime;
     /** 同一个对象进入 requireTransactionVerify 队列的次数-防止死循环 todo*/
@@ -128,6 +133,14 @@ public class LogPluginDTO implements Serializable,Comparable{
         this.annotationValue = annotationValue;
     }
 
+    public AtomicInteger getAtomicInteger() {
+        return atomicInteger;
+    }
+
+    public void setAtomicInteger(AtomicInteger atomicInteger) {
+        this.atomicInteger = atomicInteger;
+    }
+
     public Date getInitTime() {
         return initTime;
     }
@@ -150,6 +163,7 @@ public class LogPluginDTO implements Serializable,Comparable{
                 ", commit=" + commit +
                 ", annotationValue='" + annotationValue + '\'' +
                 ", LogPluginDTOStatus=" + LogPluginDTOStatus +
+                ", atomicInteger=" + atomicInteger +
                 ", initTime=" + initTime +
                 '}';
     }

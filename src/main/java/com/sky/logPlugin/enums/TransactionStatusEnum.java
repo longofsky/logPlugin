@@ -16,7 +16,9 @@ public enum TransactionStatusEnum {
     /** 最终完成*/
     COMPLETION (4,"COMPLETION"),
     /** 事务回滚*/
-    ROLLBACK (5,"ROLLBACK");
+    ROLLBACK (5,"ROLLBACK"),
+    /** 事务状态确认逻辑确认失败*/
+    TRANSACTIONFAIL (6,"TRANSACTIONFAIL");
 
     TransactionStatusEnum (Integer index,String desc) {
 

@@ -87,5 +87,4 @@
 	<!-- 开启基于注解版的切面功能 -->
 	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 
-	<bean id="logAspects" class="com.sky.logPlugin.aspects.LogAspects"/>
 </beans>

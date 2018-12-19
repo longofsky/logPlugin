@@ -41,7 +41,7 @@ public class LogPluginMinitorDBImpl extends AbstractLogPluginMinitor {
         private static LogPluginMinitorDBImpl instance = new LogPluginMinitorDBImpl();
     }
 
-    /** 初始化一个异步线程，并返回当前对象 */
+    /** 初始化一个实例，并返回当前对象 */
     public static LogPluginMinitorDBImpl getInstance (LogPluginEnvironment logPluginEnvironment) {
 
         LogPluginMinitorDBImpl instance  = LogPluginMinitorImplFactory.instance;
@@ -52,15 +52,16 @@ public class LogPluginMinitorDBImpl extends AbstractLogPluginMinitor {
     }
 
     @Override
-    public Boolean executeLogDurable(List<LogPluginDTO> logPluginDTOS) {
+    public Integer executeLogDurable(List<LogPluginDTO> logPluginDTOS) {
+
         LOGGER.info(logPluginDTOS.toString());
 
         DataSource dataSource = logPluginEnvironment.getDataSource();
         try {
             /** 如果还是没有拿到dataSource*/
             if (dataSource == null) {
-                LOGGER.info("未获取到任何数据源，因此不执行");
-                return false;
+                LOGGER.info("线程："+Thread.currentThread().getName()+"未获取到任何数据源，因此不执行");
+                return -1;
             }
             LOGGER.info("成功获取数据源");
             /** 模板类对象*/
@@ -82,9 +83,9 @@ public class LogPluginMinitorDBImpl extends AbstractLogPluginMinitor {
 //                    return logPluginDTOS.size();
 //                }
 //            });
-        } catch (Exception e) {
-            LOGGER.warn("执行Sql index异常  ", e);
+        } catch (Throwable e) {
+            LOGGER.error("执行Sql index异常  ", e);
         }
-        return false;
+        return 1;
     }
 }

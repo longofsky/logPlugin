@@ -1,17 +1,21 @@
 package com.sky.logPlugin.logPlugin;
 
+import com.sky.logPlugin.constants.LogPluginConstant;
 import com.sky.logPlugin.enums.LogPluginDTOStatusEnums;
+import com.sky.logPlugin.enums.TransactionStatusEnum;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author: 甜筒
  * @Date: 11:20 2018/12/13
  * Modified By:
  */
+
 public class LogPluginContent implements Serializable{
 
     /** 待确认事务状态集合*/
@@ -22,8 +26,6 @@ public class LogPluginContent implements Serializable{
 
     /** 持有私静态实例，防止被引用此处赋值为 持有私静态实例，防止被引用此处赋值为 null ，目的是实现延迟加载 */
     private static  LogPluginContent logPluginContent = null;
-
-
 
     /** 私有构造方法，防止被实例化*/
     private LogPluginContent () {
@@ -45,17 +47,32 @@ public class LogPluginContent implements Serializable{
     public void addWaitDurable (LogPluginDTO logPluginDTO) {
 
         if(!waitDurable.add(logPluginDTO)) {
-            requireTransactionVerify.add(logPluginDTO);
+            this.addRequireTransactionVerify(logPluginDTO);
         }
+    }
+    /** requireTransactionVerify添加数据*/
+    public void addRequireTransactionVerify (LogPluginDTO logPluginDTO) {
+
+        /** 当 logPluginDTO 进入requireTransactionVerify 的次数达到 LOGPLUGINDTO_DO_TRANSACTIONAL_MAX 时，默认事务状态更新失败*/
+        /** 此段代码不需要考虑 同步，atomicInteger 的大小不做严格要求*/
+        if (logPluginDTO.getAtomicInteger().get() >= LogPluginConstant.LOGPLUGINDTO_DO_TRANSACTIONAL_MAX) {
+            logPluginDTO.setCommit(TransactionStatusEnum.TRANSACTIONFAIL.getIndex());
+            logPluginDTO.setLogPluginDTOStatus(LogPluginDTOStatusEnums.WAITDURABLE.getIndex());
+            waitDurable.add(logPluginDTO);
+        }
+
+        logPluginDTO.getAtomicInteger().incrementAndGet();
+        requireTransactionVerify.add(logPluginDTO);
+
     }
 
     /** 操作记录添加到异步容器*/
     public void add (LogPluginDTO logPluginDTO) {
 
         if(LogPluginDTOStatusEnums.WAITDURABLE.getIndex().equals(logPluginDTO.getLogPluginDTOStatus())) {
-            waitDurable.add(logPluginDTO);
+            this.addWaitDurable(logPluginDTO);
         } else {
-            requireTransactionVerify.add(logPluginDTO);
+            this.addRequireTransactionVerify(logPluginDTO);
         }
     }
 

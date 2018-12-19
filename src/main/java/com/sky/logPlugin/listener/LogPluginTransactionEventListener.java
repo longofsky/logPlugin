@@ -5,7 +5,10 @@ import com.sky.logPlugin.enums.LogPluginDTOStatusEnums;
 import com.sky.logPlugin.enums.TransactionStatusEnum;
 import com.sky.logPlugin.logPlugin.LogPluginContent;
 import com.sky.logPlugin.logPlugin.LogPluginDTO;
+import com.sky.logPlugin.logPlugin.LogPluginMinitorDBImpl;
 import com.sky.logPlugin.utils.ThreadUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.PayloadApplicationEvent;
 import org.springframework.stereotype.Component;
@@ -25,6 +28,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 @Component
 public class LogPluginTransactionEventListener< T extends Object> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogPluginMinitorDBImpl.class);
 
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -89,6 +94,9 @@ public class LogPluginTransactionEventListener< T extends Object> {
                 logPluginDTO.setLogPluginDTOStatus(LogPluginDTOStatusEnums.WAITDURABLE.getIndex());
 
                 logPluginContent.addWaitDurable(logPluginDTO);
+            } else {
+                /** 未匹配到事务则 放回 requireTransactionVerify*/
+                logPluginContent.addRequireTransactionVerify(logPluginDTO);
             }
         }
     }

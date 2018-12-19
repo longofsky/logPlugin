@@ -8,6 +8,7 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -22,6 +23,7 @@ import java.util.UUID;
  * 功能：当方法上注解事务时，开启事务的事件通知，关联LogExecutorPlugin逻辑
  *
  */
+@Component
 @Aspect
 public class LogAspects {
 
@@ -35,7 +37,7 @@ public class LogAspects {
     public void logPluginStart (JoinPoint joinPoint ) {
 
         /** 获取被拦截方法信息*/
-        Signature signature = joinPoint.getSignature();
+         Signature signature = joinPoint.getSignature();
         String calssname = signature.getDeclaringTypeName();
         String methor =  signature.getName();
 
