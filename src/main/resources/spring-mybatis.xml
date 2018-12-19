@@ -47,13 +47,13 @@
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<!-- 配置数据库表对应的java实体类 -->
-		<property name="typeAliasesPackage" value="com.sky.mybatis.dao.entity" />
+		<property name="typeAliasesPackage" value="com.sky.logPlugin.dao.entity" />
 		<!-- 自动扫描entity目录, 省掉Configuration.xml里的手工配置 -->
 		<property name="mapperLocations" value="classpath:com/sky/mybatis/dao/impl/*.xml" />
 
 		<property name="plugins">
 			<array>
-				<bean class="com.sky.mybatis.plugin.LogExecutorPlugin">
+				<bean class="com.sky.logPlugin.plugin.LogExecutorPlugin">
 					<property name="properties">
 						<value>
 							groupName=risk
@@ -77,7 +77,7 @@
 	</bean>
 	<!-- 扫描 basePackage下所有的接口，根据对应的mapper.xml为其生成代理类 -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="com.sky.mybatis.dao.impl.mapper" />
+		<property name="basePackage" value="com.sky.logPlugin.dao.impl.mapper" />
 		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
 	</bean>
 	<!-- 使用annotation注解方式配置事务 -->
@@ -86,5 +86,5 @@
 	<!-- 开启基于注解版的切面功能 -->
 	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 
-	<bean id="logAspects" class="com.sky.mybatis.aspects.LogAspects"/>
+	<bean id="logAspects" class="com.sky.logPlugin.aspects.LogAspects"/>
 </beans>
