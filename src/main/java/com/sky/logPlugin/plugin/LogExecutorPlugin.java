@@ -5,9 +5,7 @@ import com.sky.logPlugin.constants.LogPluginConstant;
 import com.sky.logPlugin.enums.LogPluginDTOStatusEnums;
 import com.sky.logPlugin.enums.SqlTypeEnums;
 import com.sky.logPlugin.enums.TransactionStatusEnum;
-import com.sky.logPlugin.logPlugin.LogPluginContent;
-import com.sky.logPlugin.logPlugin.LogPluginDTO;
-import com.sky.logPlugin.logPlugin.LogPluginMinitorImpl;
+import com.sky.logPlugin.logPlugin.*;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -15,9 +13,17 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -32,12 +38,10 @@ import java.util.Properties;
 )
 public class LogExecutorPlugin implements Interceptor {
 
-//    @Autowired (required = false)
-//    private AdvisedSupport advised;
-//    @Autowired (required = false)
-//    private AdvisorChainFactory advisorChainFactory;
-    @Autowired(required = false)
-    private DataSourceTransactionManager transactionManager;
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogPluginMinitorDBImpl.class);
+
+    @Autowired
+    private LogPluginEnvironment logPluginEnvironment;
 
     Properties properties = null;
 
@@ -47,10 +51,13 @@ public class LogExecutorPlugin implements Interceptor {
     private static final Integer PARAMETER_INDEX = 1;
     private static final Integer ROW_BOUNDS_INDEX = 2;
 
+    private volatile Boolean flag = true;
+
 
 
     public Object intercept(Invocation invocation) throws Throwable {
 
+        /** applicationContext容器 手动注册LogPluginEnvironment*/
         this.addLogPluginContent(invocation);
 
         return invocation.proceed();
@@ -101,9 +108,15 @@ public class LogExecutorPlugin implements Interceptor {
                 }
             }
 
-            LogPluginMinitorImpl.getInstance(transactionManager.getDataSource()).startExecuteLogDurableAsyn();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            /** 获取 插件持久化类型，如果未配置 默认取 "db"*/
+            String durableType = properties.getProperty("durableType");
+            if (StringUtils.isEmpty(durableType)) {
+                durableType = "db";
+            }
+            /** 开启LogPlugin监控线程*/
+            LogPluginMinitorFactory.getLogPluginMinitor(durableType,logPluginEnvironment).startExecuteLogDurableAsyn();
+        } catch (Exception e) {
+            LOGGER.error("LogExecutorPlugin校验mapper 上AddLogPlugin注解逻辑出错！",e);
         }
     }
 

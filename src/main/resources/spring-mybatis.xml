@@ -49,7 +49,7 @@
 		<!-- 配置数据库表对应的java实体类 -->
 		<property name="typeAliasesPackage" value="com.sky.logPlugin.dao.entity" />
 		<!-- 自动扫描entity目录, 省掉Configuration.xml里的手工配置 -->
-		<property name="mapperLocations" value="classpath:com/sky/mybatis/dao/impl/*.xml" />
+		<property name="mapperLocations" value="classpath:com/sky/logPlugin/dao/impl/*.xml" />
 
 		<property name="plugins">
 			<array>
@@ -57,6 +57,7 @@
 					<property name="properties">
 						<value>
 							groupName=risk
+							durableType=db
 						</value>
 					</property>
 				</bean>
