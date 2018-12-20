@@ -65,6 +65,9 @@ public class LogExecutorPlugin implements Interceptor,DisposableBean {
 
         this.addLogPluginContent(invocation);
 
+        /** 开启LogPlugin监控线程*/
+        LogPluginMinitorFactory.getLogPluginMinitor(durableType,logPluginEnvironment).startExecuteLogDurableAsyn();
+
         return invocation.proceed();
     }
 
@@ -120,8 +123,7 @@ public class LogExecutorPlugin implements Interceptor,DisposableBean {
                     methodHasLogPlugin(mi,logPluginDTO,methodHasLogPlugin);
                 }
             }
-            /** 开启LogPlugin监控线程*/
-//            LogPluginMinitorFactory.getLogPluginMinitor(durableType,logPluginEnvironment).startExecuteLogDurableAsyn();
+
         } catch (Exception e) {
             LOGGER.error("LogExecutorPlugin校验mapper 上AddLogPlugin注解逻辑出错！",e);
         }

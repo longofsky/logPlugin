@@ -93,6 +93,12 @@ public class LogPluginContent implements Serializable{
         return LogPluginEvent;
     }
 
-
-    /** toString  todo*/
+    @Override
+    public String toString() {
+        return "LogPluginContent{" +
+                "requireTransactionVerify=" + requireTransactionVerify +
+                ", LogPluginEvent=" + LogPluginEvent +
+                ", waitDurable=" + waitDurable +
+                '}';
+    }
 }
