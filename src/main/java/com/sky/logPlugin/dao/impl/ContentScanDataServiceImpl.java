@@ -41,7 +41,7 @@ public class ContentScanDataServiceImpl  implements IContentScanDataService {
         return contentScanDataDAO.insert(contentScanDataEntityS);
     }
 
-//    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Long updateAppKeyByid(Long id,String appKey)  {
 
         Long aLong =  contentScanDataDAO.updateAppKeyByid(id,appKey);

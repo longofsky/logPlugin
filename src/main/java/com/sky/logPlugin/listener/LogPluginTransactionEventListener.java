@@ -35,7 +35,7 @@ public class LogPluginTransactionEventListener< T extends Object> {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void beforeCommit (PayloadApplicationEvent<T> event) {
 
-        upDateLogPluginContent(event,TransactionStatusEnum.BEFORECOMMIT);
+        LOGGER.info("before commit:"+((LogPluginEvent)event.getPayload()).getName());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -45,59 +45,34 @@ public class LogPluginTransactionEventListener< T extends Object> {
         /** 事务提交后回复线程名*/
         ThreadUtils.resetThreadNmae(Thread.currentThread());
 
-        System.out.println("after commit, id: " );
+        System.out.println("after commit:" +((LogPluginEvent)event.getPayload()).getName());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
     public void afterCompletion (PayloadApplicationEvent<T> event) {
 
-        System.out.println("after completion, id: ");
+        System.out.println("after completion: "+((LogPluginEvent)event.getPayload()).getName());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void afterRollback (PayloadApplicationEvent<T> event) {
 
         upDateLogPluginContent(event,TransactionStatusEnum.ROLLBACK);
-        /** 事务回滚后回复线程名*/
+        /** 事务回滚后重置线程名*/
         ThreadUtils.resetThreadNmae(Thread.currentThread());
 
-        System.out.println("after rollback, id: " );
+        System.out.println("after rollback: " +((LogPluginEvent)event.getPayload()).getName());
     }
 
-    /** 校验sql 信息和当前事务的栈帧信息是否匹配，如果匹配更改sql信息的事务状态*/
+    /** 校验sql 信息和当前事务的栈帧信息是否匹配，如果匹配更改sql信息的事务状态--需要加锁--为了不影响主线逻辑性能这里的逻辑调整为异步处理*/
     private void upDateLogPluginContent (PayloadApplicationEvent<T> event,TransactionStatusEnum transactionStatusEnum) {
 
         LogPluginEvent logPluginEvent = (LogPluginEvent) event.getPayload();
+        logPluginEvent.setStatus(transactionStatusEnum.getIndex());
 
         LogPluginContent logPluginContent  = LogPluginContent.getLogPluginContent();
 
-        /** 确认事务状态的数据从 requireTransactionVerify 转移到 waitDurable*/
-        ConcurrentLinkedQueue requireTransactionVerify = logPluginContent.getRequireTransactionVerify();
-        ConcurrentSkipListSet waitDurable = logPluginContent.getWaitDurable();
+        logPluginContent.getLogPluginEvent().put(logPluginEvent.getName(),logPluginEvent);
 
-        if (requireTransactionVerify.isEmpty()) {
-            return;
-        }
-        while (!requireTransactionVerify.isEmpty()) {
-
-            LogPluginDTO logPluginDTO = (LogPluginDTO) requireTransactionVerify.poll();
-
-            if (LogPluginDTOStatusEnums.WAITDURABLE.getIndex().equals(logPluginDTO.getLogPluginDTOStatus())) {
-
-                logPluginContent.addWaitDurable(logPluginDTO);
-                continue;
-            }
-
-            if (logPluginDTO.getStackValue().equals(logPluginEvent.getThread().getName())) {
-
-                logPluginDTO.setCommit(transactionStatusEnum.getIndex());
-                logPluginDTO.setLogPluginDTOStatus(LogPluginDTOStatusEnums.WAITDURABLE.getIndex());
-
-                logPluginContent.addWaitDurable(logPluginDTO);
-            } else {
-                /** 未匹配到事务则 放回 requireTransactionVerify*/
-                logPluginContent.addRequireTransactionVerify(logPluginDTO);
-            }
-        }
     }
 }

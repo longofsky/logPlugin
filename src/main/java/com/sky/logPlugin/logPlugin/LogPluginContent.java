@@ -3,6 +3,7 @@ package com.sky.logPlugin.logPlugin;
 import com.sky.logPlugin.constants.LogPluginConstant;
 import com.sky.logPlugin.enums.LogPluginDTOStatusEnums;
 import com.sky.logPlugin.enums.TransactionStatusEnum;
+import com.sky.logPlugin.listener.LogPluginEvent;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +21,10 @@ public class LogPluginContent implements Serializable{
 
     /** 待确认事务状态集合*/
     private ConcurrentLinkedQueue<LogPluginDTO> requireTransactionVerify = new ConcurrentLinkedQueue();
+
+
+    /** 保存事务提交的事件*/
+    private ConcurrentHashMap<String,LogPluginEvent> LogPluginEvent = new ConcurrentHashMap();
 
     /** 带持久化集合，两个集合元素不重复*/
     private ConcurrentSkipListSet<LogPluginDTO> waitDurable = new ConcurrentSkipListSet();
@@ -80,17 +85,14 @@ public class LogPluginContent implements Serializable{
         return requireTransactionVerify;
     }
 
-    public void setRequireTransactionVerify(ConcurrentLinkedQueue requireTransactionVerify) {
-        this.requireTransactionVerify = requireTransactionVerify;
-    }
-
     public ConcurrentSkipListSet getWaitDurable() {
         return waitDurable;
     }
 
-    public void setWaitDurable(ConcurrentSkipListSet waitDurable) {
-        this.waitDurable = waitDurable;
+    public ConcurrentHashMap<String,LogPluginEvent> getLogPluginEvent() {
+        return LogPluginEvent;
     }
+
 
     /** toString  todo*/
 }

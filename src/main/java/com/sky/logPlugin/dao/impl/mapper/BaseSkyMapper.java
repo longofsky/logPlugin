@@ -1,5 +1,6 @@
 package com.sky.logPlugin.dao.impl.mapper;
 
+import com.sky.logPlugin.annotation.AddLogPlugin;
 import com.sky.logPlugin.dao.entity.BaseSkyEntity;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public interface BaseSkyMapper<T extends BaseSkyEntity> {
 	 * @param entity
 	 * @return
 	 */
+	@AddLogPlugin
 	Long insert(T entity);
 	
 
@@ -123,8 +125,5 @@ public interface BaseSkyMapper<T extends BaseSkyEntity> {
 	 * 使用existsByIdL
 	 */
 	Integer existsById(Long id);
-	
-
-
 
 }

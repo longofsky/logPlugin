@@ -125,7 +125,7 @@ public class MyBatisTest {
 			e.printStackTrace();
 		}
 
-        Long contentScanDataEntity = contentScanDataService.insert();
+//        Long contentScanDataEntity = contentScanDataService.insert();
 
 		LogPluginContent logPluginContent = LogPluginContent.getLogPluginContent();
 
@@ -141,6 +141,8 @@ public class MyBatisTest {
 		IContentScanDataService contentScanDataService= (IContentScanDataService)applicationContext.getBean("contentScanDataServiceImpl");
 
 		Long contentScanDataEntity = contentScanDataService.insert();
+
+        LogPluginContent logPluginContent = LogPluginContent.getLogPluginContent();
 
 		System.out.println(contentScanDataEntity);
 	}

@@ -49,5 +49,14 @@ public interface LogPluginMinitor {
      * @Modified By:
      */
     public Integer executeLogDurable (final List<LogPluginDTO> logPluginDTOS);
+    
+    /**
+     *任务更新事务状态
+     * @Autowired: 甜筒
+     * 
+     * @Date:
+     * @Modified By:
+     */
+    public void taskWithTransaction();
 
 }

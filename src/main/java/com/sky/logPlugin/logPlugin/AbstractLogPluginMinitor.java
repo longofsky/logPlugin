@@ -2,6 +2,8 @@ package com.sky.logPlugin.logPlugin;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.sky.logPlugin.constants.LogPluginConstant;
+import com.sky.logPlugin.enums.LogPluginDTOStatusEnums;
+import com.sky.logPlugin.listener.LogPluginEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,10 +12,7 @@ import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * @author: 甜筒
@@ -29,7 +28,7 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
     /**
      * 执行 日志持久化的时间间隔 （秒）
      */
-    private Integer logPluginExecuteIntervalSeconds = 20;
+    private Integer logPluginExecuteIntervalSeconds = 5;
 
     /**
      * 是否正在执行 waitDurable 的队列
@@ -56,8 +55,20 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
             return;
         }
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("LogPluginMinitorDBImpl-pool-%d").build();
-        scheduledExecutorService = new ScheduledThreadPoolExecutor(1, namedThreadFactory);
+        scheduledExecutorService = new ScheduledThreadPoolExecutor(2, namedThreadFactory);
         LOGGER.info("LogPluginMinitorDBImpl logPlugin定时器 scheduledExecutorService启动 {}", scheduledExecutorService);
+
+
+        /** 开启任务更新事务状态线程*/
+        scheduledExecutorService.scheduleAtFixedRate(
+                new Runnable() {
+                    public void run() {
+                        taskWithTransaction();
+                    }
+                }
+                , 5, 5, TimeUnit.SECONDS);
+
+        /** 开启任务持久化线程*/
         /** 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间*/
         scheduledExecutorService.scheduleAtFixedRate(
                 new Runnable() {
@@ -124,6 +135,48 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
         LOGGER.info("线程："+Thread.currentThread().getName()+" 运行时间："+(System.currentTimeMillis()-startTime)+" 结束点：正常执行完毕。 元素："+logPluginDTOSize+"个。 执行："+executedCount+"个");
 
         return executedCount;
+    }
+
+    public void taskWithTransaction() {
+
+        /** 确认任务事务状态---数据从 requireTransactionVerify 转移到 waitDurable*/
+        ConcurrentLinkedQueue requireTransactionVerify = logPluginContent.getRequireTransactionVerify();
+        ConcurrentSkipListSet waitDurable = logPluginContent.getWaitDurable();
+        ConcurrentHashMap<String,LogPluginEvent> LogPluginEvent = logPluginContent.getLogPluginEvent();
+
+        Long start = System.currentTimeMillis();
+
+        LOGGER.info("任务更新事务状态线程开始执行，线程："+Thread.currentThread().getName()+"&requireTransactionVerify:"+requireTransactionVerify.size()
+                +"&waitDurable:"+waitDurable.size()+"&LogPluginEvent:"+LogPluginEvent.size());
+
+        while (!requireTransactionVerify.isEmpty()) {
+
+            LogPluginDTO logPluginDTO = (LogPluginDTO) requireTransactionVerify.poll();
+
+            if (LogPluginDTOStatusEnums.WAITDURABLE.getIndex().equals(logPluginDTO.getLogPluginDTOStatus())) {
+
+                logPluginContent.addWaitDurable(logPluginDTO);
+                continue;
+            }
+
+            LogPluginEvent logPluginEvent = LogPluginEvent.get(logPluginDTO.getStackValue());
+
+            /** 如果当前内存中还没有对应的 事务事件则 回放到requireTransactionVerify*/
+            if (logPluginEvent == null) {
+                logPluginContent.addRequireTransactionVerify(logPluginDTO);
+                continue;
+            }
+
+            logPluginDTO.setCommit(logPluginEvent.getStatus());
+            logPluginDTO.setLogPluginDTOStatus(LogPluginDTOStatusEnums.WAITDURABLE.getIndex());
+
+            logPluginContent.addWaitDurable(logPluginDTO);
+
+        }
+
+        LOGGER.info("任务更新事务状态线程结束执行，线程："+Thread.currentThread().getName()+"&运行时间："+(System.currentTimeMillis()-start)+"&requireTransactionVerify:"+requireTransactionVerify.size()
+                +"&waitDurable:"+waitDurable.size()+"&LogPluginEvent:"+LogPluginEvent.size());
+
     }
 
     public Integer executeLogDurable(final List<LogPluginDTO> logPluginDTOS) {

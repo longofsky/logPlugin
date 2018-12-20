@@ -83,6 +83,9 @@ public class LogExecutorPlugin implements Interceptor,DisposableBean {
 
         LogPluginDTO logPluginDTO = this.invocationToLogPluginDTO(invocation);
 
+        /** 应用执行方法处理逻辑标识*/
+        Boolean methodHasLogPlugin = false;
+
         /** 获取当前方法上的注解信息*/
         Class c = null;
         try {
@@ -96,28 +99,55 @@ public class LogExecutorPlugin implements Interceptor,DisposableBean {
                 return;
             }
 
-            Method[] ms = c.getDeclaredMethods();
+            /** 先处理自身的方法*/
+            Method[] m = c.getDeclaredMethods();
+            methodHasLogPlugin(m,logPluginDTO,methodHasLogPlugin);
 
-            if (ms.length > 0) {
-                for (int i = 0; i < ms.length; i++) {
-                    Method method  = ms[i];
+            /** 处理继承父类方法*/
+            Class superClass =  c.getSuperclass();
+            if (!methodHasLogPlugin && superClass != null) {
+                Method[] ms = superClass.getDeclaredMethods();
+                methodHasLogPlugin(ms,logPluginDTO,methodHasLogPlugin);
+            }
 
-                    if (method.getName().equals(logPluginDTO.getSqlMethor())){
-                        AddLogPlugin addLogPlugin = (AddLogPlugin)method.getAnnotation(AddLogPlugin.class);
+            /** 处理实现接口方法*/
+            Class<?>[] interfaceList =  c.getInterfaces();
 
-                        if (addLogPlugin != null) {
-                            logPluginDTO.setAnnotationValue(addLogPlugin.value());
-                            logPluginContent.add(logPluginDTO);
-                        }
-                    }
+            if (!methodHasLogPlugin && interfaceList != null && interfaceList.length > 0) {
+                for (int i = 0; i < interfaceList.length; i++) {
+
+                    Method[] mi = interfaceList[i].getDeclaredMethods();
+                    methodHasLogPlugin(mi,logPluginDTO,methodHasLogPlugin);
                 }
             }
             /** 开启LogPlugin监控线程*/
-            LogPluginMinitorFactory.getLogPluginMinitor(durableType,logPluginEnvironment).startExecuteLogDurableAsyn();
+//            LogPluginMinitorFactory.getLogPluginMinitor(durableType,logPluginEnvironment).startExecuteLogDurableAsyn();
         } catch (Exception e) {
             LOGGER.error("LogExecutorPlugin校验mapper 上AddLogPlugin注解逻辑出错！",e);
         }
     }
+
+    private void methodHasLogPlugin(Method[] m,LogPluginDTO logPluginDTO,Boolean methodHasLogPlugin) {
+
+        if (m.length > 0 && !methodHasLogPlugin) {
+            for (int i = 0; i < m.length; i++) {
+                Method method  = m[i];
+
+                if (method.getName().equals(logPluginDTO.getSqlMethor())){
+                    AddLogPlugin addLogPlugin = (AddLogPlugin)method.getAnnotation(AddLogPlugin.class);
+
+                    if (addLogPlugin != null) {
+
+                        logPluginDTO.setAnnotationValue(addLogPlugin.value());
+                        logPluginContent.add(logPluginDTO);
+
+                        methodHasLogPlugin = true;
+                    }
+                }
+            }
+        }
+    }
+
 
     private LogPluginDTO invocationToLogPluginDTO(Invocation invocation) {
 

@@ -1,6 +1,5 @@
 package com.sky.logPlugin.listener;
 
-import com.alibaba.fastjson.JSON;
 
 /**
  * @author: 甜筒
@@ -9,23 +8,36 @@ import com.alibaba.fastjson.JSON;
  */
 public class LogPluginEvent {
 
-    private Thread thread;
+    private String name;
 
-    public LogPluginEvent(Thread thread) {
+    private Integer status;
 
-        this.thread = thread;
+    public LogPluginEvent(String name){
+
+        this.name = name;
     }
 
-    public Thread getThread() {
-        return thread;
+    public String getName() {
+        return name;
     }
 
-    public void setThread(Thread thread) {
-        this.thread = thread;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
     @Override
     public String toString() {
-        return JSON.toJSONString(this);
+        return "LogPluginEvent{" +
+                "name='" + name + '\'' +
+                ", status=" + status +
+                '}';
     }
 }
