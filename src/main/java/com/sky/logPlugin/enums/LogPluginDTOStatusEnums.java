@@ -1,6 +1,7 @@
 package com.sky.logPlugin.enums;
 
 /**
+ *日志信息状态枚举
  * @author: 甜筒
  * @Date: 10:59 2018/12/18
  * Modified By:

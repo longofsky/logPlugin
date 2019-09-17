@@ -3,6 +3,7 @@ package com.sky.logPlugin.logPlugin;
 import java.util.List;
 
 /**
+ *日志信息持久化 接口
  * @author: 甜筒
  * @Date: 19:51 2018/12/17
  * Modified By:
@@ -34,7 +35,7 @@ public interface LogPluginMinitor {
     public void executeLogDurableAsyn ();
 
     /**
-     *转换带持久化数据
+     *转换待持久化数据
      * @Autowired: 甜筒
      * @Date:
      * @Modified By:

@@ -25,6 +25,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+
+/**
+ * @Description 拦截sql信息插件
+ * @Author litianlong
+ * @Date 2019-09-17 15:42
+ */
 @Intercepts(
         {
                 @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class,ResultHandler.class}),

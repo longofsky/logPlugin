@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ *日志信息容器
  * @author: 甜筒
  * @Date: 11:20 2018/12/13
  * Modified By:

@@ -4,6 +4,7 @@ import com.sky.logPlugin.logPlugin.LogPluginMinitor;
 import com.sky.logPlugin.logPlugin.LogPluginMinitorDBImpl;
 
 /**
+ *持久化方式枚举
  * @author: 甜筒
  * @Date: 15:16 2018/12/19
  * Modified By:

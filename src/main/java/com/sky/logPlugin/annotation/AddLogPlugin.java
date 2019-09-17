@@ -3,7 +3,8 @@ package com.sky.logPlugin.annotation;
 import java.lang.annotation.*;
 
 /**
- * @author: 甜筒
+ *日志插件辅助注解，可以添加备注
+ *  @author: 甜筒
  * @Date: 18:36 2018/12/13
  * Modified By:
  */

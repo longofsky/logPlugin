@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 /**
+ *日志信息持久化 抽象类
  * @author: 甜筒
  * @Date: 19:51 2018/12/17
  * Modified By:

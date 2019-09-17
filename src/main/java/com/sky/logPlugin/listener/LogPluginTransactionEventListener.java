@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
+ *日志中间件事务事件监听类
  * @author: 甜筒
  * @Date: 15:58 2018/12/14
  * Modified By:

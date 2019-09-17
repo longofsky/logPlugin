@@ -1,6 +1,7 @@
 package com.sky.logPlugin.enums;
 
 /**
+ *sql类型枚举
  * @author: 甜筒
  * @Date: 17:04 2018/12/17
  * Modified By:

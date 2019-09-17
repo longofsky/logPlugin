@@ -22,6 +22,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
+ *日志信息 数据库持久化实现类
  * @author: 甜筒
  * @Date: 20:06 2018/12/17
  * Modified By:

@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ *日志持久化信息
  * @author: 甜筒
  * @Date: 13:58 2018/12/13
  * Modified By:

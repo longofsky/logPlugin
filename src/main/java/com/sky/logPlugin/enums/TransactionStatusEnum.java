@@ -1,6 +1,7 @@
 package com.sky.logPlugin.enums;
 
 /**
+ *事务状态枚举
  * @author: 甜筒
  * @Date: 11:33 2018/12/17
  * Modified By:
