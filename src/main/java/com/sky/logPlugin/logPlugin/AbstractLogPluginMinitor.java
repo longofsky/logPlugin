@@ -42,13 +42,14 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
 
     private ScheduledExecutorService scheduledExecutorService;
 
+    @Override
     public void startExecuteLogDurableAsyn() {
 
         if (logPluginContent.getWaitDurable().size() >= LogPluginConstant.DEFAULT_MONITOR_LOGPLUGIN_QUEUE_SIZE) {
             executeLogDurableAsyn();
         }
     }
-
+    @Override
     public void scheduledExecuteLogDurableAsyn() {
 
         if (scheduledExecutorService != null) {
@@ -72,6 +73,7 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
         /** 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间*/
         scheduledExecutorService.scheduleAtFixedRate(
                 new Runnable() {
+                    @Override
                     public void run() {
                         transformExecuteLogDurable();
                     }
@@ -79,9 +81,11 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
                 , logPluginExecuteIntervalSeconds, logPluginExecuteIntervalSeconds, TimeUnit.SECONDS);
     }
 
+    @Override
     public void executeLogDurableAsyn() {
         if (!monitorLogPluginQueueRunning) {
             scheduledExecutorService.execute(new Runnable() {
+                @Override
                 public void run() {
                     transformExecuteLogDurable();
                 }
@@ -90,6 +94,7 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
     }
 
     /** 此方法保证单线程执行*/
+    @Override
     public int transformExecuteLogDurable() {
 
         Long startTime = System.currentTimeMillis();
@@ -137,6 +142,7 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
         return executedCount;
     }
 
+    @Override
     public void taskWithTransaction() {
 
         /** 确认任务事务状态---数据从 requireTransactionVerify 转移到 waitDurable*/
@@ -179,6 +185,7 @@ public abstract class AbstractLogPluginMinitor implements LogPluginMinitor {
 
     }
 
+    @Override
     public Integer executeLogDurable(final List<LogPluginDTO> logPluginDTOS) {
 
         return -1;

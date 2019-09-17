@@ -99,7 +99,6 @@ public interface BaseSkyDAO<T extends BaseSkyEntity>  {
 	 * 根据列表删除
 	 * @param ids
 	 * @return
-	 * @throws MogoException
 	 * 使用deleteByIdsL
 	 */
 	Integer deleteByIds(List<Long> ids) ;

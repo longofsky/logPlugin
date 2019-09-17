@@ -51,9 +51,7 @@ public class LogExecutorPlugin implements Interceptor,DisposableBean {
 
     /** 获取 插件持久化类型，如果未配置 默认取 "db"*/
     String durableType;
-
-
-
+    @Override
     public Object intercept(Invocation invocation) throws Throwable {
 
         if (flag) {
@@ -71,12 +69,14 @@ public class LogExecutorPlugin implements Interceptor,DisposableBean {
         return invocation.proceed();
     }
 
+    @Override
     public Object plugin(Object target) {
 
         return Plugin.wrap(target, this);
 
     }
 
+    @Override
     public void setProperties(Properties properties) {
 
         this.properties = properties;
@@ -257,6 +257,7 @@ public class LogExecutorPlugin implements Interceptor,DisposableBean {
         logPluginDTO.setCommit(TransactionStatusEnum.UNTRANSACTION.getIndex());
         logPluginDTO.setLogPluginDTOStatus(LogPluginDTOStatusEnums.WAITDURABLE.getIndex());
     }
+    @Override
     public void destroy() throws Exception {
 
         LogPluginMinitorFactory.getLogPluginMinitor(durableType,logPluginEnvironment).transformExecuteLogDurable();

@@ -9,7 +9,7 @@ import com.sky.logPlugin.dao.entity.ContentScanDataEntity;
  */
 public interface IContentScanDataService {
 
-    public Long insert( );
+    public Long insert();
 
     public Long updateAppKeyByid (Long id,String appKey);
 

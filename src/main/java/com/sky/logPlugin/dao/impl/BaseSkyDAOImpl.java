@@ -34,6 +34,7 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param id 不能为空
      * @return
      */
+    @Override
     public T findById(Long id) {
         return entityMapper.findById(id);
     }
@@ -43,6 +44,7 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param t entity对象
      * @return 使用insertL
      */
+    @Override
     public Long insert(T t) {
         entityMapper.insert(t);
         return t.getId();
@@ -53,10 +55,12 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param t entity对象 不能为空，且 ID必须不为null
      * @return
      */
+    @Override
     public boolean update(T t) {
         return entityMapper.update(t) == 1;
     }
 
+    @Override
     public boolean deleteById(Long id) {
         return entityMapper.deleteById(id) == 1;
     }
@@ -66,6 +70,7 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param ids List<Long> ID列表，注意不能超过架构组定义的值,且size至少>=1
      * @return 使用findByIdsL
      */
+    @Override
     public List<T> findByIds(List<Long> ids) {
         return entityMapper.findByIds(ids);
     }
@@ -75,6 +80,7 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param ids List<Long> ID列表，注意不能超过架构组定义的值,且size至少>=1
      * @return 使用findByIdsToMapL
      */
+    @Override
     public Map<Long, T> findByIdsToMap(List<Long> ids) {
 
         List<T> list = findByIds(ids);
@@ -93,6 +99,7 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param list List<T> entity对象,注意list的大小，不能超过架构组定义的值
      * @return
      */
+    @Override
     public Integer insertList(List<T> list) {
         return entityMapper.insertList(list);
     }
@@ -101,6 +108,7 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param list List<T> 注意list的大小，不能超过架构组定义的值,且size至少>=1
      * @return
      */
+    @Override
     public Integer updateList(List<T> list) {
         return entityMapper.updateList(list);
     }
@@ -109,6 +117,7 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param ids List<Long> 注意list的大小，不能超过架构组定义的值，且size至少>=1
      * @return 使用deleteByIdsL
      */
+    @Override
     public Integer deleteByIds(List<Long> ids) {
         return entityMapper.deleteByIds(ids);
     }
@@ -118,6 +127,7 @@ public abstract class BaseSkyDAOImpl<M extends BaseSkyMapper<T>, T extends BaseS
      * @param id
      * @return 使用existsByIdL
      */
+    @Override
     public boolean existsById(Long id) {
         Integer exists = entityMapper.existsById(id);
         return (exists != null && exists != 0);

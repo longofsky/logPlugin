@@ -168,6 +168,7 @@ public class LogPluginDTO implements Serializable,Comparable{
                 '}';
     }
 
+    @Override
     public int compareTo(Object o) {
 
         LogPluginDTO logPluginDTO = (LogPluginDTO)o;
@@ -176,8 +177,12 @@ public class LogPluginDTO implements Serializable,Comparable{
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         LogPluginDTO that = (LogPluginDTO) o;
         return Objects.equals(code, that.code) &&
                 Objects.equals(classPath, that.classPath) &&
